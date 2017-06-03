@@ -1,6 +1,6 @@
 (ns help.core-test
   (:require [clojure.test :refer :all]
-            [help.core :refer :all]))
+            [help.help :refer :all]))
 
 (deftest a-test
   (testing "FIXME, I fail."

@@ -8,7 +8,8 @@
     #?@(:clj
         [
             [clojure.test :as test]
-            [potemkin]])))
+            [potemkin]]))
+  #?(:cljs (:require-macros [help :refer [case-eval casep]])))
 
 (defn call-pred
   ([_]

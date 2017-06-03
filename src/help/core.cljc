@@ -9,7 +9,7 @@
         [
             [clojure.test :as test]
             [potemkin]]))
-  #?(:cljs (:require-macros [help.core :refer [case-eval casep]])))
+  #?(:cljs (:require-macros [help.core :refer [case-eval casep mlet]])))
 
 (defn call-pred
   ([_]

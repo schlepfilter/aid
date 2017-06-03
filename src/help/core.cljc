@@ -1,4 +1,4 @@
-(ns help
+(ns help.core
   (:require [cats.context :as ctx]
             [cats.core :as m]
             [cats.monad.exception :as exc]
@@ -9,7 +9,7 @@
         [
             [clojure.test :as test]
             [potemkin]]))
-  #?(:cljs (:require-macros [help :refer [case-eval casep]])))
+  #?(:cljs (:require-macros [help.core :refer [case-eval casep]])))
 
 (defn call-pred
   ([_]

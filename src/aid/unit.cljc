@@ -1,4 +1,4 @@
-(ns help.unit
+(ns aid.unit
   (:require [cats.protocols :as p]
             [cats.util :as util]))
 

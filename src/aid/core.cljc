@@ -115,6 +115,7 @@
            (curry (get-currying-arity f) f)))
   ([arity f]
    (fn [& outer-more]
+     ;TODO delete let
      (let [n (count outer-more)]
        (case-eval arity
                   n (apply f outer-more)

@@ -62,6 +62,7 @@
          [operator & fs]
          (potemkin/unify-gensyms
            `(fn [& more##]
+              ;TODO use flip
               (~operator ~@(map (fn [f##]
                                   `(apply ~f## more##))
                                 fs)))))

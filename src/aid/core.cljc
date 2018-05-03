@@ -117,6 +117,7 @@
   ([arity f]
    (fn [& outer-more]
      (let [n (count outer-more)]
+       ;TODO use case
        (case-eval arity
                   n (apply f outer-more)
                   (curry (- arity n)

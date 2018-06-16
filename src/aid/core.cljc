@@ -260,6 +260,7 @@
 
 (defn ap
   [m1 m2]
+  ;TODO use >>= and <$>
   (mlet [x1 m1
          x2 m2]
         (return (x1 x2))))

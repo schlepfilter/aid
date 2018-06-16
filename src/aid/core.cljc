@@ -155,7 +155,7 @@
              [& x#]
              (apply ~f x#))))
 
-;TODO remove this function after cats.context is fixed
+;TODO delete this function after cats.context is fixed
 (defn infer
   "Given an optional value infer its context. If context is already set, it
   is returned as is without any inference operation."
@@ -173,78 +173,79 @@
        (str "No context is set and it can not be automatically "
             "resolved from provided value")))))
 
-;TODO remove this function after cats.context is fixed
+;TODO delete this function after cats.context is fixed
 (defn <>
   [& more]
   (with-redefs [cats.context/infer infer]
     (apply m/<> more)))
 
-;TODO remove this function after cats.context is fixed
+;TODO delete this function after cats.context is fixed
 (defn mempty
   [& more]
   (with-redefs [cats.context/infer infer]
     (apply m/mempty more)))
 
-;TODO remove this function after cats.context is fixed
+;TODO delete this function after cats.context is fixed
 (defn <$>
   [& more]
   (with-redefs [cats.context/infer infer]
     (apply m/<$> more)))
 
-;TODO remove this function after cats.context is fixed
+;TODO delete this function after cats.context is fixed
 (defn pure
   [& more]
   (with-redefs [cats.context/infer infer]
     (apply m/pure more)))
 
-;TODO remove this function after cats.context is fixed
+;TODO delete this function after cats.context is fixed
 (defn <*>
   [& more]
   (with-redefs [cats.context/infer infer]
     (apply m/<*> more)))
 
-;TODO remove this function after cats.context is fixed
+;TODO delete this function after cats.context is fixed
 (defn return
   [& more]
   (with-redefs [cats.context/infer infer]
     (apply m/return more)))
 
-;TODO remove this function after cats.context is fixed
+;TODO delete this function after cats.context is fixed
 (defn >>=
   [& more]
   (with-redefs [cats.context/infer infer]
     (apply m/>>= more)))
 
-;TODO remove this function after cats.context is fixed
+;TODO delete this function after cats.context is fixed
 (defn =<<
   [& more]
   (with-redefs [cats.context/infer infer]
     (apply m/=<< more)))
 
-;TODO remove this function after cats.context is fixed
+;TODO delete this function after cats.context is fixed
 (defn join
   [& more]
   (with-redefs [cats.context/infer infer]
     (apply m/join more)))
 
-;TODO remove this macro after cats.context is fixed
+;TODO delete this macro after cats.context is fixed
 #?(:clj (defmacro lift-m
           [& more]
           `(with-redefs [cats.context/infer infer]
              (m/lift-m ~@more))))
 
-;TODO remove this macro after cats.context is fixed
+;TODO delete this macro after cats.context is fixed
 #?(:clj (defmacro mlet
           [& more]
           `(with-redefs [cats.context/infer infer]
              (m/mlet ~@more))))
 
-;TODO remove this macro after cats.context is fixed
+;TODO delete this macro after cats.context is fixed
 #?(:clj (defmacro ->=
           [& more]
           `(with-redefs [cats.context/infer infer]
              (m/->= ~@more))))
 
+;TODO delete this function
 (defn lift-a*
   [x ys]
   (casep ys
@@ -254,6 +255,7 @@
 (defn lift-a
   [f]
   (fn [& more]
+    ;TODO use apply <*>
     (lift-a* (<$> (curry (count more) f) (first more)) (rest more))))
 
 (defn ap

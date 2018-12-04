@@ -258,6 +258,7 @@
     ;TODO use apply <*>
     (lift-a* (<$> (curry (count more) f) (first more)) (rest more))))
 
+;TODO delete this function after cats.core is fixed
 (defn ap
   [m1 m2]
   ;TODO use >>= and <$>
@@ -265,6 +266,7 @@
          x2 m2]
         (return (x1 x2))))
 
+;TODO delete this definition after cats.monad.maybe is fixed
 (def nothing
   (maybe/nothing))
 

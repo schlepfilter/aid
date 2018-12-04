@@ -1,15 +1,11 @@
 (ns aid.core
-  (:require [cats.context :as ctx]
-            [cats.core :as m]
+  (:require [cats.core :as m]
             [cats.monad.exception :as exc]
             [cats.monad.maybe :as maybe]
-            [cats.protocols :as p]
             [aid.unit :as unit]
-    #?@(:clj
-        [
-            [clojure.test :as test]
-            [potemkin]]))
-  #?(:cljs (:require-macros [aid.core :refer [case-eval casep mlet]])))
+            #?@(:clj [[clojure.test :as test]
+                      [potemkin]]))
+  #?(:cljs (:require-macros [aid.core :refer [case-eval casep]])))
 
 (defn call-pred
   ([_]
@@ -117,7 +113,6 @@
   ([arity f]
    (fn [& outer-more]
      (let [n (count outer-more)]
-       ;TODO use case
        (case-eval arity
                   n (apply f outer-more)
                   (curry (- arity n)
@@ -155,116 +150,26 @@
              [& x#]
              (apply ~f x#))))
 
-;TODO delete this function after cats.context is fixed
-(defn infer
-  "Given an optional value infer its context. If context is already set, it
-  is returned as is without any inference operation."
-  {:no-doc true}
-  ([]
-   (when (nil? ctx/*context*)
-     (ctx/throw-illegal-argument "No context is set."))
-   ctx/*context*)
-  ([v]
-   (cond
-     (satisfies? p/Contextual v)
-     (p/-get-context v)
-     :else
-     (ctx/throw-illegal-argument
-       (str "No context is set and it can not be automatically "
-            "resolved from provided value")))))
-
-;TODO delete this function after cats.context is fixed
-(defn <>
-  [& more]
-  (with-redefs [cats.context/infer infer]
-    (apply m/<> more)))
-
-;TODO delete this function after cats.context is fixed
-(defn mempty
-  [& more]
-  (with-redefs [cats.context/infer infer]
-    (apply m/mempty more)))
-
-;TODO delete this function after cats.context is fixed
-(defn <$>
-  [& more]
-  (with-redefs [cats.context/infer infer]
-    (apply m/<$> more)))
-
-;TODO delete this function after cats.context is fixed
-(defn pure
-  [& more]
-  (with-redefs [cats.context/infer infer]
-    (apply m/pure more)))
-
-;TODO delete this function after cats.context is fixed
-(defn <*>
-  [& more]
-  (with-redefs [cats.context/infer infer]
-    (apply m/<*> more)))
-
-;TODO delete this function after cats.context is fixed
-(defn return
-  [& more]
-  (with-redefs [cats.context/infer infer]
-    (apply m/return more)))
-
-;TODO delete this function after cats.context is fixed
-(defn >>=
-  [& more]
-  (with-redefs [cats.context/infer infer]
-    (apply m/>>= more)))
-
-;TODO delete this function after cats.context is fixed
-(defn =<<
-  [& more]
-  (with-redefs [cats.context/infer infer]
-    (apply m/=<< more)))
-
-;TODO delete this function after cats.context is fixed
-(defn join
-  [& more]
-  (with-redefs [cats.context/infer infer]
-    (apply m/join more)))
-
-;TODO delete this macro after cats.context is fixed
-#?(:clj (defmacro lift-m
-          [& more]
-          `(with-redefs [cats.context/infer infer]
-             (m/lift-m ~@more))))
-
-;TODO delete this macro after cats.context is fixed
-#?(:clj (defmacro mlet
-          [& more]
-          `(with-redefs [cats.context/infer infer]
-             (m/mlet ~@more))))
-
-;TODO delete this macro after cats.context is fixed
-#?(:clj (defmacro ->=
-          [& more]
-          `(with-redefs [cats.context/infer infer]
-             (m/->= ~@more))))
-
-;TODO delete this function
+;TODO delete lift-a after cats.core is fixed
 (defn lift-a*
   [x ys]
   (casep ys
          empty? x
-         (recur (<*> x (first ys)) (rest ys))))
+         (recur (m/<*> x (first ys)) (rest ys))))
 
 (defn lift-a
   [f]
   (fn [& more]
     ;TODO use apply <*>
-    (lift-a* (<$> (curry (count more) f) (first more)) (rest more))))
+    (lift-a* (m/<$> (curry (count more) f) (first more)) (rest more))))
 
 ;TODO delete this function after cats.core is fixed
 (defn ap
   [m1 m2]
   ;TODO use >>= and <$>
-  (mlet [x1 m1
-         x2 m2]
-        (return (x1 x2))))
+  (m/mlet [x1 m1
+           x2 m2]
+          (m/return (x1 x2))))
 
 ;TODO delete this definition after cats.monad.maybe is fixed
 (def nothing

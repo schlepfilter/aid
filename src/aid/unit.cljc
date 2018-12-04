@@ -1,3 +1,4 @@
+;TODO delete this namespace when unit is added to cats.monad
 (ns aid.unit
   (:require [cats.protocols :as p]
             [cats.util :as util]))

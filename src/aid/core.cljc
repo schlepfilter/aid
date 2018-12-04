@@ -150,6 +150,11 @@
              [& x#]
              (apply ~f x#))))
 
+;TODO delete this function when it's added to cats.core
+(defn <$
+  [a fa]
+  (m/<$> (constantly a) fa))
+
 ;TODO delete lift-a after cats.core is fixed
 (defn lift-a*
   [x ys]

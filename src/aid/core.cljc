@@ -1,11 +1,15 @@
 (ns aid.core
+  (:refer-clojure :exclude [defcurried])
   (:require [cats.core :as m]
             [cats.monad.exception :as exc]
             [cats.monad.maybe :as maybe]
             [aid.unit :as unit]
             #?@(:clj [[clojure.test :as test]
                       [potemkin]]))
-  #?(:cljs (:require-macros [aid.core :refer [case-eval casep]])))
+  #?(:cljs (:require-macros [aid.core :refer [build
+                                              case-eval
+                                              casep
+                                              defcurried]])))
 
 (defn call-pred
   ([_]
@@ -196,3 +200,25 @@
          [test then]
          `(maybe* (if-not ~test
                     ~then)))))
+
+(defcurried if-then-else
+            [if-function then-function else-function x]
+            ((build if
+                    if-function
+                    then-function
+                    else-function)
+              x))
+
+(defcurried if-then
+            [if-function then-function else]
+            (if-then-else if-function
+                          then-function
+                          identity
+                          else))
+
+(defcurried if-else
+            [if-function else-function then]
+            (if-then-else if-function
+                          identity
+                          else-function
+                          then))

@@ -1,6 +1,7 @@
 (ns aid.core
   (:refer-clojure :exclude [defcurried])
-  (:require [cats.core :as m]
+  (:require [cats.context :as ctx]
+            [cats.core :as m]
             [cats.monad.exception :as exc]
             [cats.monad.maybe :as maybe]
             [aid.unit :as unit]
@@ -159,18 +160,12 @@
   [a fa]
   (m/<$> (constantly a) fa))
 
-;TODO delete lift-a after cats.core is fixed
-(defn lift-a*
-  [x ys]
-  (casep ys
-         empty? x
-         (recur (m/<*> x (first ys)) (rest ys))))
-
 (defn lift-a
   [f]
   (fn [& more]
-    ;TODO use apply <*>
-    (lift-a* (m/<$> (curry (count more) f) (first more)) (rest more))))
+    (apply m/<*>
+           (m/pure (ctx/infer (first more)) (curry (count more) f))
+           more)))
 
 ;TODO delete this function after cats.core is fixed
 (defn ap

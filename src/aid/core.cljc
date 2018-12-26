@@ -50,12 +50,12 @@
          ;If operator is a list, then it returns a value, which can be passed arround.
          [operator]
          (casep operator
-                test/function? operator
-                list? operator
-                `(fn [& more#]
-                   (->> (map gensymize more#)
-                        (cons '~operator)
-                        eval))))
+           test/function? operator
+           list? operator
+           `(fn [& more#]
+              (->> (map gensymize more#)
+                   (cons '~operator)
+                   eval))))
 
        ;This definition is harder to read.
        ;This definition doesn't use functionize.
@@ -119,10 +119,10 @@
    (fn [& outer-more]
      (let [n (count outer-more)]
        (case-eval arity
-                  n (apply f outer-more)
-                  (curry (- arity n)
-                         (fn [& inner-more]
-                           (apply f (concat outer-more inner-more)))))))))
+         n (apply f outer-more)
+         (curry (- arity n)
+                (fn [& inner-more]
+                  (apply f (concat outer-more inner-more)))))))))
 
 #?(:clj
    (do (defmacro curriedfn
@@ -182,8 +182,8 @@
 (defn maybe*
   [expr]
   (casep expr
-         nil? nothing
-         (maybe/just expr)))
+    nil? nothing
+    (maybe/just expr)))
 
 #?(:clj
    (do (defmacro maybe-if
@@ -197,23 +197,23 @@
                     ~then)))))
 
 (defcurried if-then-else
-            [if-function then-function else-function x]
-            ((build if
-                    if-function
-                    then-function
-                    else-function)
-              x))
+  [if-function then-function else-function x]
+  ((build if
+          if-function
+          then-function
+          else-function)
+    x))
 
 (defcurried if-then
-            [if-function then-function else]
-            (if-then-else if-function
-                          then-function
-                          identity
-                          else))
+  [if-function then-function else]
+  (if-then-else if-function
+                then-function
+                identity
+                else))
 
 (defcurried if-else
-            [if-function else-function then]
-            (if-then-else if-function
-                          identity
-                          else-function
-                          then))
+  [if-function else-function then]
+  (if-then-else if-function
+                identity
+                else-function
+                then))

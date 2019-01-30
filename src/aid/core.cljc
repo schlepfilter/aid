@@ -131,10 +131,9 @@
             ~@body)))
 
 (defmacro defcurried
-  [function-name bindings & body]
+  [function-name & more]
   `(def ~function-name
-     (curriedfn ~bindings
-                ~@body)))
+     (curriedfn ~@more)))
 
 (defn flip
   [f]

@@ -5,7 +5,7 @@
             [cats.monad.exception :as exc]
             [cats.monad.maybe :as maybe]
             #?@(:clj [[clojure.test :as test]
-                      [potemkin]])
+                      potemkin])
             [com.rpl.specter :as s]
             [aid.unit :as unit])
   #?(:cljs (:require-macros [aid.core :refer [build

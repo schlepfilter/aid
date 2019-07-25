@@ -1,15 +1,17 @@
 (ns aid.core
+  (:refer-clojure :exclude [defcurried])
   (:require [cats.context :as ctx]
             [cats.core :as m]
             [cats.monad.exception :as exc]
             [cats.monad.maybe :as maybe]
-            [cats.protocols :as p]
-            [aid.unit :as unit]
-    #?@(:clj
-        [
-            [clojure.test :as test]
-            [potemkin]]))
-  #?(:cljs (:require-macros [aid.core :refer [case-eval casep mlet]])))
+            #?@(:clj [[clojure.test :as test]
+                      potemkin])
+            [com.rpl.specter :as s]
+            [aid.unit :as unit])
+  #?(:cljs (:require-macros [aid.core :refer [build
+                                              case-eval
+                                              casep
+                                              defcurried]])))
 
 (defn call-pred
   ([_]
@@ -17,16 +19,15 @@
   ([pred expr]
    (pred expr)))
 
-#?(:clj
-   (do (defmacro casep
-         [x & clauses]
-         `(condp call-pred ~x
-            ~@clauses))
+(defmacro casep
+  [x & clauses]
+  `(condp call-pred ~x
+     ~@clauses))
 
-       (defmacro case-eval
-         [x & clauses]
-         `(condp = ~x
-            ~@clauses))))
+(defmacro case-eval
+  [x & clauses]
+  `(condp = ~x
+     ~@clauses))
 
 #?(:clj
    (do (defn gensymize
@@ -49,12 +50,12 @@
          ;If operator is a list, then it returns a value, which can be passed arround.
          [operator]
          (casep operator
-                test/function? operator
-                list? operator
-                `(fn [& more#]
-                   (->> (map gensymize more#)
-                        (cons '~operator)
-                        eval))))
+           test/function? operator
+           list? operator
+           `(fn [& more#]
+              (->> (map gensymize more#)
+                   (cons '~operator)
+                   eval))))
 
        ;This definition is harder to read.
        ;This definition doesn't use functionize.
@@ -62,6 +63,7 @@
          [operator & fs]
          (potemkin/unify-gensyms
            `(fn [& more##]
+              ;TODO use flip
               (~operator ~@(map (fn [f##]
                                   `(apply ~f## more##))
                                 fs)))))
@@ -118,23 +120,21 @@
      ;TODO delete let
      (let [n (count outer-more)]
        (case-eval arity
-                  n (apply f outer-more)
-                  (curry (- arity n)
-                         (fn [& inner-more]
-                           (apply f (concat outer-more inner-more)))))))))
+         n (apply f outer-more)
+         (curry (- arity n)
+                (fn [& inner-more]
+                  (apply f (concat outer-more inner-more)))))))))
 
-#?(:clj
-   (do (defmacro curriedfn
-         [bindings & body]
-         `(curry ~(count bindings)
-                 (fn ~bindings
-                   ~@body)))
+(defmacro curriedfn
+  [bindings & body]
+  `(curry ~(count bindings)
+          (fn ~bindings
+            ~@body)))
 
-       (defmacro defcurried
-         [function-name bindings & body]
-         `(def ~function-name
-            (curriedfn ~bindings
-                       ~@body)))))
+(defmacro defcurried
+  [function-name & more]
+  `(def ~function-name
+     (curriedfn ~@more)))
 
 (defn flip
   [f]
@@ -148,135 +148,75 @@
 (def nop
   (constantly unit/unit))
 
-#?(:clj (defmacro defpfmethod
-          [multifn dispatch-val f]
-          `(defmethod ~multifn ~dispatch-val
-             [& x#]
-             (apply ~f x#))))
+(defmacro defpfmethod
+  [multifn dispatch-val f]
+  `(defmethod ~multifn ~dispatch-val
+     [& x#]
+     (apply ~f x#)))
 
-;TODO remove this function after cats.context is fixed
-(defn infer
-  "Given an optional value infer its context. If context is already set, it
-  is returned as is without any inference operation."
-  {:no-doc true}
-  ([]
-   (when (nil? ctx/*context*)
-     (ctx/throw-illegal-argument "No context is set."))
-   ctx/*context*)
-  ([v]
-   (cond
-     (satisfies? p/Contextual v)
-     (p/-get-context v)
-     :else
-     (ctx/throw-illegal-argument
-       (str "No context is set and it can not be automatically "
-            "resolved from provided value")))))
-
-;TODO remove this function after cats.context is fixed
-(defn <>
-  [& more]
-  (with-redefs [cats.context/infer infer]
-    (apply m/<> more)))
-
-;TODO remove this function after cats.context is fixed
-(defn mempty
-  [& more]
-  (with-redefs [cats.context/infer infer]
-    (apply m/mempty more)))
-
-;TODO remove this function after cats.context is fixed
-(defn <$>
-  [& more]
-  (with-redefs [cats.context/infer infer]
-    (apply m/<$> more)))
-
-;TODO remove this function after cats.context is fixed
-(defn pure
-  [& more]
-  (with-redefs [cats.context/infer infer]
-    (apply m/pure more)))
-
-;TODO remove this function after cats.context is fixed
-(defn <*>
-  [& more]
-  (with-redefs [cats.context/infer infer]
-    (apply m/<*> more)))
-
-;TODO remove this function after cats.context is fixed
-(defn return
-  [& more]
-  (with-redefs [cats.context/infer infer]
-    (apply m/return more)))
-
-;TODO remove this function after cats.context is fixed
-(defn >>=
-  [& more]
-  (with-redefs [cats.context/infer infer]
-    (apply m/>>= more)))
-
-;TODO remove this function after cats.context is fixed
-(defn =<<
-  [& more]
-  (with-redefs [cats.context/infer infer]
-    (apply m/=<< more)))
-
-;TODO remove this function after cats.context is fixed
-(defn join
-  [& more]
-  (with-redefs [cats.context/infer infer]
-    (apply m/join more)))
-
-;TODO remove this macro after cats.context is fixed
-#?(:clj (defmacro lift-m
-          [& more]
-          `(with-redefs [cats.context/infer infer]
-             (m/lift-m ~@more))))
-
-;TODO remove this macro after cats.context is fixed
-#?(:clj (defmacro mlet
-          [& more]
-          `(with-redefs [cats.context/infer infer]
-             (m/mlet ~@more))))
-
-;TODO remove this macro after cats.context is fixed
-#?(:clj (defmacro ->=
-          [& more]
-          `(with-redefs [cats.context/infer infer]
-             (m/->= ~@more))))
-
-(defn lift-a*
-  [x ys]
-  (casep ys
-         empty? x
-         (recur (<*> x (first ys)) (rest ys))))
+;TODO delete this function when it's added to cats.core
+(defn <$
+  [a fa]
+  (m/<$> (constantly a) fa))
 
 (defn lift-a
   [f]
   (fn [& more]
-    (lift-a* (<$> (curry (count more) f) (first more)) (rest more))))
+    (apply m/<*>
+           (m/pure (ctx/infer (first more)) (curry (count more) f))
+           more)))
 
+;TODO delete this function after cats.core is fixed
 (defn ap
   [m1 m2]
-  (mlet [x1 m1
-         x2 m2]
-        (return (x1 x2))))
+  ;TODO use >>= and <$>
+  (m/mlet [x1 m1
+           x2 m2]
+          (m/return (x1 x2))))
 
+;TODO delete this definition after cats.monad.maybe is fixed
 (def nothing
   (maybe/nothing))
 
 (defn maybe*
   [expr]
   (casep expr
-         nil? nothing
-         (maybe/just expr)))
+    nil? nothing
+    (maybe/just expr)))
 
-#?(:clj
-   (do (defmacro maybe-if
-         [test then]
-         `(maybe* (if ~test
-                    ~then)))
+(defmacro maybe-if
+  [test then]
+  `(maybe* (if ~test
+             ~then)))
 
-       (defmacro maybe-if-not
-         [test then]
-         `(maybe* (if-not ~test
-                    ~then)))))
+(defmacro maybe-if-not
+  [test then]
+  `(maybe* (if-not ~test
+             ~then)))
+
+
+(defcurried if-then-else
+  [if-function then-function else-function x]
+  ((build if
+          if-function
+          then-function
+          else-function)
+    x))
+
+(defcurried if-then
+  [if-function then-function else]
+  (if-then-else if-function
+                then-function
+                identity
+                else))
+
+(defcurried if-else
+  [if-function else-function then]
+  (if-then-else if-function
+                identity
+                else-function
+                then))
+
+(defcurried transfer*
+  [apath f m]
+  (s/setval apath (f m) m))

@@ -122,7 +122,9 @@
          n (apply f outer-more)
          (curry (- arity n)
                 (fn [& inner-more]
-                  (apply f (concat outer-more inner-more)))))))))
+                  (apply f (concat outer-more inner-more))))))))
+  ([arity f & more]
+   (apply (curry arity f) more)))
 
 (defmacro curriedfn
   [bindings & body]
@@ -200,7 +202,7 @@
           if-function
           then-function
           else-function)
-    x))
+   x))
 
 (defcurried if-then
   [if-function then-function else]

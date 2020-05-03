@@ -200,7 +200,7 @@
           if-function
           then-function
           else-function)
-    x))
+   x))
 
 (defcurried if-then
   [if-function then-function else]
